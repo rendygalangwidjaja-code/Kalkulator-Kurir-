@@ -1,0 +1,6 @@
+{
+  "appId": "com.rendy.kalkulatorkurir",
+  "appName": "Kalkulator Kurir",
+  "webDir": "www",
+  "bundledWebRuntime": false
+}
