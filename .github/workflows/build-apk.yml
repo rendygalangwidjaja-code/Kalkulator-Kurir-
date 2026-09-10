@@ -27,16 +27,24 @@ jobs:
 
       - name: Create Web Build Directory
         run: |
-          mkdir -p www
+          mkdir -p www assets
           cp index.html www/index.html
+          cp logo.png assets/icon.png 2>/dev/null || true
+          cp logo.png assets/logo.png 2>/dev/null || true
 
-      - name: Install Dependencies
-        run: npm install
+      - name: Install Dependencies & Assets Tool
+        run: |
+          npm install
+          npm install -D @capacitor/assets
 
       - name: Add Android Platform
         run: |
           npx cap add android
           npx cap sync android
+
+      - name: Generate App Icons
+        run: |
+          npx capacitor-assets generate --iconAvailable
 
       - name: Build Unsigned APK
         run: |
@@ -48,4 +56,3 @@ jobs:
         with:
           name: Kalkulator-Kurir-APK
           path: android/app/build/outputs/apk/debug/app-debug.apk
-          
