@@ -27,15 +27,14 @@ jobs:
 
       - name: Create Web Build Directory
         run: |
-          mkdir -p www assets
+          mkdir -p www resources
           cp index.html www/index.html
-          cp logo.png assets/icon.png 2>/dev/null || true
-          cp logo.png assets/logo.png 2>/dev/null || true
+          cp logo.png resources/icon.png 2>/dev/null || true
 
-      - name: Install Dependencies & Assets Tool
+      - name: Install Dependencies & Tools
         run: |
           npm install
-          npm install -D @capacitor/assets
+          npm install -g cordova-res
 
       - name: Add Android Platform
         run: |
@@ -44,7 +43,7 @@ jobs:
 
       - name: Generate App Icons
         run: |
-          npx capacitor-assets generate --iconAvailable
+          cordova-res android --skip-config --copy 2>/dev/null || true
 
       - name: Build Unsigned APK
         run: |
