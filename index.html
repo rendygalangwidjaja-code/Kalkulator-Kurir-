@@ -21,9 +21,8 @@
   
   <div class="max-w-2xl w-full space-y-3.5">
     
-    <!-- Header Kurva Merah khas SiCepat -->
+    <!-- Header Merah khas SiCepat -->
     <div class="bg-red-600 text-white rounded-b-3xl p-5 shadow-lg relative overflow-hidden">
-      <!-- Gelombang Akses Visual -->
       <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-red-500/30 rounded-full blur-2xl"></div>
       
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 relative z-10">
@@ -264,7 +263,14 @@
       }
 
       const offDays = totalDays - workDays;
-      const p1Salary = (DAILY_RATE * 15) / 2;
+      
+      // Batas maksimal Periode 1
+      const maxP1 = (DAILY_RATE * 15) / 2;
+      
+      // Periode 1 dinamis (maksimal 1.402.500) agar tidak minus saat belum diisi
+      const p1Salary = Math.min(totalBase / 2, maxP1);
+      
+      // Periode 2: Sisa Gaji Pokok + Bonus
       const p2Salary = (totalBase - p1Salary) + totalBonus;
       const grandTotal = totalBase + totalBonus;
 
