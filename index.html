@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Kalkulator Gaji Kurir</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js untuk Grafik -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
     body { font-family: 'Plus Jakarta Sans', sans-serif; }
@@ -15,101 +17,118 @@
     }
   </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen p-3 sm:p-5 flex justify-center items-start">
+<body class="bg-slate-100 text-slate-800 min-h-screen pb-10 flex justify-center items-start">
+  
   <div class="max-w-2xl w-full space-y-3.5">
     
-    <!-- Header Utama -->
-    <div class="bg-yellow-400 text-slate-950 rounded-2xl p-4 shadow-xl shadow-yellow-500/10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-      <div>
-        <span class="text-[10px] font-extrabold uppercase tracking-wider bg-slate-950 text-yellow-400 px-2 py-0.5 rounded-full">Kalkulator Kurir</span>
-        <h1 class="text-lg font-black tracking-tight mt-1 uppercase">Kalkulator Gaji Harian</h1>
-      </div>
-        
-      <!-- Selector Bulan & Tahun -->
-      <div class="flex items-center gap-1.5 bg-slate-950 text-white px-3 py-1.5 rounded-xl self-stretch sm:self-auto justify-between border border-slate-800">
-        <select id="selectMonth" onchange="generateDaysTable()" class="bg-transparent text-xs font-bold text-yellow-400 focus:outline-none cursor-pointer">
-          <option value="01">Januari</option>
-          <option value="02">Februari</option>
-          <option value="03">Maret</option>
-          <option value="04">April</option>
-          <option value="05">Mei</option>
-          <option value="06">Juni</option>
-          <option value="07">Juli</option>
-          <option value="08">Agustus</option>
-          <option value="09" selected>September</option>
-          <option value="10">Oktober</option>
-          <option value="11">November</option>
-          <option value="12">Desember</option>
-        </select>
-        <input type="number" id="selectYear" value="2026" onchange="generateDaysTable()" class="w-12 bg-transparent text-xs font-bold text-white focus:outline-none text-center">
-      </div>
-    </div>
-
-    <!-- GRAND TOTAL -->
-    <div class="bg-gradient-to-br from-slate-900 to-slate-950 border-2 border-emerald-500/40 rounded-2xl p-4 text-center shadow-lg shadow-emerald-500/5 relative overflow-hidden">
-      <div class="absolute -right-6 -top-6 w-20 h-20 bg-emerald-500/10 rounded-full blur-xl"></div>
-      <p class="text-[11px] font-bold text-emerald-400 uppercase tracking-widest">Total Akumulasi Gaji Sebulan</p>
-      <p id="displayGrandTotal" class="text-3xl sm:text-4xl font-black text-white tracking-tight my-1">Rp 0</p>
-        
-      <div class="flex justify-center items-center gap-4 text-xs font-medium text-slate-400 mt-2 border-t border-slate-800/80 pt-2">
-        <span>Hari Masuk: <strong id="displayWorkDays" class="text-emerald-400 font-bold">0</strong> hari</span>
-        <span class="text-slate-600">•</span>
-        <span>Libur/Off: <strong id="displayOffDays" class="text-rose-400 font-bold">0</strong> hari</span>
-      </div>
-    </div>
-
-    <!-- Kartu Periode Gaji & Pokok -->
-    <div class="grid grid-cols-2 gap-2.5">
-      <!-- Periode 1 -->
-      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3.5 flex flex-col justify-between">
-        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Periode 1 (Cair Tgl 20)</p>
-        <p id="displayP1" class="text-lg font-black text-yellow-400 mt-1">Rp 0</p>
-        <p class="text-[9px] text-slate-500 mt-0.5">(187.000 × 15) / 2</p>
-      </div>
-
-      <!-- Periode 2 -->
-      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3.5 flex flex-col justify-between">
-        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Periode 2 (Akhir Bulan)</p>
-        <p id="displayP2" class="text-lg font-black text-emerald-400 mt-1">Rp 0</p>
-        <p class="text-[9px] text-slate-500 mt-0.5">Sisa Pokok + Total Bonus</p>
-      </div>
-
-      <!-- Total Pokok -->
-      <div class="bg-slate-900/60 border border-slate-800/80 rounded-xl p-2.5 flex justify-between items-center">
-        <span class="text-[11px] text-slate-400 font-medium">Gaji Pokok:</span>
-        <span id="displayTotalBase" class="text-xs font-bold text-slate-200">Rp 0</span>
-      </div>
-
-      <!-- Total Bonus -->
-      <div class="bg-slate-900/60 border border-slate-800/80 rounded-xl p-2.5 flex justify-between items-center">
-        <span class="text-[11px] text-slate-400 font-medium">Total Bonus:</span>
-        <span id="displayTotalBonus" class="text-xs font-bold text-yellow-400">Rp 0</span>
-      </div>
-    </div>
-
-    <!-- Tabel Input Harian -->
-    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3.5 shadow-xl">
-      <div class="flex justify-between items-center mb-2.5 px-1">
-        <div class="flex items-center gap-2">
-          <h2 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Input Parcel Harian</h2>
-          <span id="saveIndicator" class="text-[9px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full font-bold hidden">Tersimpan</span>
+    <!-- Header Kurva Merah khas SiCepat -->
+    <div class="bg-red-600 text-white rounded-b-3xl p-5 shadow-lg relative overflow-hidden">
+      <!-- Gelombang Akses Visual -->
+      <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-red-500/30 rounded-full blur-2xl"></div>
+      
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 relative z-10">
+        <div>
+          <span class="text-[10px] font-extrabold uppercase tracking-wider bg-white text-red-600 px-2.5 py-0.5 rounded-full shadow-sm">Kalkulator Kurir</span>
+          <h1 class="text-xl font-black tracking-tight mt-1.5 uppercase">Kalkulator Gaji Harian</h1>
         </div>
-        <button onclick="resetData()" class="text-[10px] text-rose-400 hover:text-rose-300 font-semibold transition">Riset Input</button>
+          
+        <!-- Selector Bulan & Tahun -->
+        <div class="flex items-center gap-1.5 bg-white text-slate-900 px-3 py-1.5 rounded-xl self-stretch sm:self-auto justify-between border border-red-200 shadow-sm">
+          <select id="selectMonth" onchange="generateDaysTable()" class="bg-transparent text-xs font-bold text-red-600 focus:outline-none cursor-pointer">
+            <option value="01">Januari</option>
+            <option value="02">Februari</option>
+            <option value="03">Maret</option>
+            <option value="04">April</option>
+            <option value="05">Mei</option>
+            <option value="06">Juni</option>
+            <option value="07">Juli</option>
+            <option value="08">Agustus</option>
+            <option value="09" selected>September</option>
+            <option value="10">Oktober</option>
+            <option value="11">November</option>
+            <option value="12">Desember</option>
+          </select>
+          <input type="number" id="selectYear" value="2026" onchange="generateDaysTable()" class="w-12 bg-transparent text-xs font-bold text-slate-800 focus:outline-none text-center">
+        </div>
+      </div>
+    </div>
+
+    <div class="px-3 sm:px-5 space-y-3.5">
+      <!-- GRAND TOTAL -->
+      <div class="bg-white border-2 border-red-500/20 rounded-2xl p-4 text-center shadow-sm relative overflow-hidden">
+        <p class="text-[11px] font-bold text-red-600 uppercase tracking-widest">Total Akumulasi Gaji Sebulan</p>
+        <p id="displayGrandTotal" class="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight my-1">Rp 0</p>
+          
+        <div class="flex justify-center items-center gap-3 text-xs font-medium text-slate-500 mt-2 border-t border-slate-100 pt-2 flex-wrap">
+          <span>Hari Masuk: <strong id="displayWorkDays" class="text-emerald-600 font-bold">0</strong> hari</span>
+          <span class="text-slate-300">•</span>
+          <span>Libur/Off: <strong id="displayOffDays" class="text-red-500 font-bold">0</strong> hari</span>
+          <span class="text-slate-300">•</span>
+          <span>Total Paket: <strong id="displayTotalParcels" class="text-red-600 font-bold">0</strong> paket</span>
+        </div>
       </div>
 
-      <div class="overflow-x-auto max-h-[420px] overflow-y-auto pr-1">
-        <table class="w-full text-left text-xs">
-          <thead class="sticky top-0 bg-slate-900 text-slate-400 font-semibold border-b border-slate-800 z-10">
-            <tr>
-              <th class="pb-2 pt-1">Tanggal</th>
-              <th class="pb-2 pt-1 text-center">Jml Parcel</th>
-              <th class="pb-2 pt-1 text-center">Bonus</th>
-              <th class="pb-2 pt-1 text-right">Gaji Harian</th>
-            </tr>
-          </thead>
-          <tbody id="tableBody" class="divide-y divide-slate-800/50">
-          </tbody>
-        </table>
+      <!-- Kartu Periode Gaji & Pokok -->
+      <div class="grid grid-cols-2 gap-2.5">
+        <!-- Periode 1 -->
+        <div class="bg-white border border-slate-200 rounded-2xl p-3.5 flex flex-col justify-between shadow-sm">
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Periode 1 (Cair Tgl 20)</p>
+          <p id="displayP1" class="text-lg font-black text-red-600 mt-1">Rp 0</p>
+          <p class="text-[9px] text-slate-400 mt-0.5">(187.000 × 15) / 2</p>
+        </div>
+
+        <!-- Periode 2 -->
+        <div class="bg-white border border-slate-200 rounded-2xl p-3.5 flex flex-col justify-between shadow-sm">
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Periode 2 (Akhir Bulan)</p>
+          <p id="displayP2" class="text-lg font-black text-emerald-600 mt-1">Rp 0</p>
+          <p class="text-[9px] text-slate-400 mt-0.5">Sisa Pokok + Total Bonus</p>
+        </div>
+
+        <!-- Total Pokok -->
+        <div class="bg-white border border-slate-200 rounded-xl p-2.5 flex justify-between items-center shadow-sm">
+          <span class="text-[11px] text-slate-500 font-medium">Gaji Pokok:</span>
+          <span id="displayTotalBase" class="text-xs font-bold text-slate-800">Rp 0</span>
+        </div>
+
+        <!-- Total Bonus -->
+        <div class="bg-white border border-slate-200 rounded-xl p-2.5 flex justify-between items-center shadow-sm">
+          <span class="text-[11px] text-slate-500 font-medium">Total Bonus:</span>
+          <span id="displayTotalBonus" class="text-xs font-bold text-red-600">Rp 0</span>
+        </div>
+      </div>
+
+      <!-- Section Grafik Pendapatan -->
+      <div class="bg-white border border-slate-200 rounded-2xl p-3.5 shadow-sm">
+        <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-3 px-1">Grafik Perbandingan Pendapatan Bulanan</h2>
+        <div class="w-full h-48">
+          <canvas id="incomeChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Tabel Input Harian -->
+      <div class="bg-white border border-slate-200 rounded-2xl p-3.5 shadow-sm">
+        <div class="flex justify-between items-center mb-2.5 px-1">
+          <div class="flex items-center gap-2">
+            <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Input Parcel Harian</h2>
+            <span id="saveIndicator" class="text-[9px] bg-emerald-100 text-emerald-700 border border-emerald-300 px-2 py-0.5 rounded-full font-bold hidden">Tersimpan</span>
+          </div>
+          <button onclick="resetData()" class="text-[10px] text-red-500 hover:text-red-700 font-semibold transition">Riset Input</button>
+        </div>
+
+        <div class="overflow-x-auto max-h-[420px] overflow-y-auto pr-1">
+          <table class="w-full text-left text-xs">
+            <thead class="sticky top-0 bg-slate-50 text-slate-500 font-semibold border-b border-slate-200 z-10">
+              <tr>
+                <th class="pb-2 pt-1 pl-1">Tanggal</th>
+                <th class="pb-2 pt-1 text-center">Jml Parcel</th>
+                <th class="pb-2 pt-1 text-center">Bonus</th>
+                <th class="pb-2 pt-1 text-right pr-1">Gaji Harian</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody" class="divide-y divide-slate-100">
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
 
@@ -118,6 +137,9 @@
   <script>
     const DAILY_RATE = 187000;
     let monthData = {};
+    let chartInstance = null;
+
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agt", "Sep", "Okt", "Nov", "Des"];
 
     function getDaysInMonth(month, year) {
       return new Date(year, month, 0).getDate();
@@ -163,17 +185,17 @@
         }
 
         const row = document.createElement('tr');
-        row.className = "hover:bg-slate-800/40 transition odd:bg-slate-950/30";
+        row.className = "hover:bg-slate-50 transition odd:bg-slate-50/50";
         row.innerHTML = `
-          <td class="py-2 font-mono text-slate-400">${dayStr}/${month}</td>
+          <td class="py-2 pl-1 font-mono text-slate-500 font-medium">${dayStr}/${month}</td>
           <td class="py-1.5 text-center">
             <input type="number" value="${monthData[dateKey].parcel || ''}" 
               oninput="updateDayData('${dateKey}', this.value)" 
               placeholder="0" 
-              class="w-20 bg-slate-950 border border-slate-700/80 rounded-lg px-2 py-1 text-center text-xs font-bold text-white focus:outline-none focus:border-yellow-400 transition">
+              class="w-20 bg-slate-50 border border-slate-300 rounded-lg px-2 py-1 text-center text-xs font-bold text-slate-800 focus:outline-none focus:border-red-500 focus:bg-white transition">
           </td>
-          <td class="py-2 text-center font-bold text-yellow-400" id="bonus-${dateKey}">-</td>
-          <td class="py-2 text-right font-mono font-medium text-slate-300" id="gaji-${dateKey}">Rp 0</td>
+          <td class="py-2 text-center font-bold text-red-600" id="bonus-${dateKey}">-</td>
+          <td class="py-2 pr-1 text-right font-mono font-medium text-slate-700" id="gaji-${dateKey}">Rp 0</td>
         `;
         tbody.appendChild(row);
       }
@@ -189,8 +211,16 @@
 
     function resetData() {
       if (confirm("Riset semua data input bulan ini?")) {
-        monthData = {};
-        localStorage.removeItem('kurir_delivery_data');
+        const month = document.getElementById('selectMonth').value;
+        const year = parseInt(document.getElementById('selectYear').value) || 2026;
+        const totalDays = getDaysInMonth(parseInt(month), year);
+
+        for (let day = 1; day <= totalDays; day++) {
+          const dayStr = String(day).padStart(2, '0');
+          delete monthData[`${dayStr}-${month}-${year}`];
+        }
+
+        saveData();
         generateDaysTable();
       }
     }
@@ -203,6 +233,7 @@
       let totalBase = 0;
       let totalBonus = 0;
       let workDays = 0;
+      let totalParcels = 0;
 
       for (let day = 1; day <= totalDays; day++) {
         const dayStr = String(day).padStart(2, '0');
@@ -217,6 +248,7 @@
 
         if (hasWorked) {
           workDays++;
+          totalParcels += parcelCount;
           baseSalary = DAILY_RATE;
           bonus = calculateBonus(parcelCount);
         }
@@ -232,23 +264,81 @@
       }
 
       const offDays = totalDays - workDays;
-
-      // Rumus Periode 1: (187000 * 15) / 2 = Rp 1.402.500
       const p1Salary = (DAILY_RATE * 15) / 2;
-
-      // Rumus Periode 2: Sisa Gaji Pokok + Total Bonus
       const p2Salary = (totalBase - p1Salary) + totalBonus;
-
       const grandTotal = totalBase + totalBonus;
 
       document.getElementById('displayTotalBonus').innerText = `Rp ${totalBonus.toLocaleString('id-ID')}`;
       document.getElementById('displayTotalBase').innerText = `Rp ${totalBase.toLocaleString('id-ID')}`;
       document.getElementById('displayWorkDays').innerText = workDays;
       document.getElementById('displayOffDays').innerText = offDays;
+      document.getElementById('displayTotalParcels').innerText = totalParcels.toLocaleString('id-ID');
 
       document.getElementById('displayP1').innerText = `Rp ${p1Salary.toLocaleString('id-ID')}`;
       document.getElementById('displayP2').innerText = `Rp ${p2Salary.toLocaleString('id-ID')}`;
       document.getElementById('displayGrandTotal').innerText = `Rp ${grandTotal.toLocaleString('id-ID')}`;
+
+      renderChart(year);
+    }
+
+    function renderChart(selectedYear) {
+      const monthlyTotals = Array(12).fill(0);
+
+      Object.keys(monthData).forEach(dateKey => {
+        const [day, m, y] = dateKey.split('-');
+        if (parseInt(y) === selectedYear) {
+          const monthIdx = parseInt(m) - 1;
+          const parcelCount = parseInt(monthData[dateKey].parcel) || 0;
+          if (monthData[dateKey].parcel !== '' && parcelCount > 0) {
+            const base = DAILY_RATE;
+            const bonus = calculateBonus(parcelCount);
+            monthlyTotals[monthIdx] += (base + bonus);
+          }
+        }
+      });
+
+      const ctx = document.getElementById('incomeChart').getContext('2d');
+      
+      if (chartInstance) {
+        chartInstance.destroy();
+      }
+
+      chartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: monthNames,
+          datasets: [{
+            label: 'Pendapatan (Rp)',
+            data: monthlyTotals,
+            backgroundColor: '#dc2626',
+            borderRadius: 6,
+            hoverBackgroundColor: '#b91c1c'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            x: {
+              ticks: { color: '#64748b', font: { size: 10 } },
+              grid: { display: false }
+            },
+            y: {
+              ticks: { 
+                color: '#64748b', 
+                font: { size: 9 },
+                callback: function(value) {
+                  return 'Rp ' + (value / 1000) + 'k';
+                }
+              },
+              grid: { color: '#f1f5f9' }
+            }
+          }
+        }
+      });
     }
 
     loadSavedData();
